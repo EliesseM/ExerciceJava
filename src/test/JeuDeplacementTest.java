@@ -28,7 +28,7 @@ public class JeuDeplacementTest {
     public void testCaseLibre_Vide() {
         List<char[]> carte = Arrays.asList(
                 "....".toCharArray(), // ligne 0
-                ".#..".toCharArray(), // ligne 1
+                "....".toCharArray(), // ligne 1
                 "....".toCharArray() // ligne 2
         );
 
