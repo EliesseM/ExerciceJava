@@ -1,123 +1,127 @@
-package src;
+package src; // Indique que ce fichier se trouve dans le package "src"
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+import java.io.IOException; // Pour gérer les erreurs de lecture/écriture
+import java.nio.file.*; // Pour manipuler les fichiers et chemins
+import java.util.*; // Importe les structures de données comme List et ArrayList
 
-public class JeuDeplacement {
+public class JeuDeplacement { // Déclaration de la classe principale
 
-    public static void main(String[] args) {
-        System.out.println("Bienvenue dans CarteAventure !");
+    public static void main(String[] args) { // Point d'entrée de l'application
+        System.out.println("Bienvenue dans CarteAventure !"); // Message de bienvenue
 
-        // Chargement de la carte depuis le fichier carte.txt
-        Path path = Paths.get("carte.txt");
-        List<char[]> carte = new java.util.ArrayList<>();
+        List<char[]> carte = chargerCarte("carte.txt"); // Charge la carte depuis un fichier texte
+        afficherCarte(carte); // Affiche la carte telle qu'elle est dans le fichier
 
         try {
-            List<String> lines = Files.readAllLines(path);
+            List<String> mouvements = Files.readAllLines(Paths.get("mouvement.txt")); // Lit les lignes du fichier
+                                                                                      // mouvement.txt
+            int[] position = lirePositionInitiale(mouvements.get(0)); // Lit la position de départ
+            String instructions = mouvements.get(1).trim(); // Lit les instructions de déplacement (ex: "NESO")
 
-            // Affiche la carte ligne par ligne
-            for (String line : lines) {
-                System.out.println(line);
-            }
+            System.out.println("Position de départ : (" + position[0] + "," + position[1] + ")"); // Affiche la position
+                                                                                                  // initiale
+            System.out.println("Déplacements : " + instructions); // Affiche les directions
 
-            // Conversion de chaque ligne en tableau de caractères
-            for (String ligne : lines) {
-                carte.add(ligne.toCharArray());
-            }
+            int[] positionFinale = executerDeplacements(position[0], position[1], instructions, carte); // Applique les
+                                                                                                        // déplacements
 
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
-        }
-
-        try {
-            // Lecture du fichier mouvement.txt (position initiale + directions)
-            Path cheminMouvements = Paths.get("mouvement.txt");
-            List<String> lignes = Files.readAllLines(cheminMouvements);
-
-            // Lecture de la position de départ
-            String lignePosition = lignes.get(0);
-            String[] coords = lignePosition.split(",");
-            int posX = Integer.parseInt(coords[0].trim()); // Abscisse (colonne)
-            int posY = Integer.parseInt(coords[1].trim()); // Ordonnée (ligne)
-
-            // Lecture des instructions de déplacement (N, S, E, O)
-            String instructions = lignes.get(1).trim();
-
-            System.out.println("Position de départ : (" + posX + "," + posY + ")");
-            System.out.println("Déplacements : " + instructions);
-
-            // Traitement de chaque instruction
-            for (int i = 0; i < instructions.length(); i++) {
-                char direction = instructions.charAt(i);
-
-                int nx = posX; // Nouvelle position X
-                int ny = posY; // Nouvelle position Y
-
-                // Déplacement selon la direction
-                switch (direction) {
-                    case 'N':
-                        ny = posY - 1;
-                        break;
-                    case 'S':
-                        ny = posY + 1;
-                        break;
-                    case 'E':
-                        nx = posX + 1;
-                        break;
-                    case 'O':
-                        nx = posX - 1;
-                        break;
-                    default:
-                        System.out.println("Direction inconnue : " + direction);
-                        continue;
-                }
-
-                // Test si la case cible est libre
-                if (caseLibre(nx, ny, carte)) {
-                    posX = nx;
-                    posY = ny;
-                } else {
-                    System.out.println("Déplacement bloqué à (" + nx + "," + ny + ") : obstacle ou hors carte.");
-                }
-            }
-
-            // Affichage de la position finale
-            System.out.println("Position finale : (" + posX + "," + posY + ")");
-
-            // Affichage de la carte avec 'P' à la position finale
-            if (posY >= 0 && posY < carte.size() && posX >= 0 && posX < carte.get(posY).length) {
-                afficherCarteAvecPersonnage(carte, posX, posY);
-            } else {
-                System.out.println("Le personnage est hors de la carte, impossible de l'afficher.");
-            }
+            System.out.println("Position finale : (" + positionFinale[0] + "," + positionFinale[1] + ")"); // Affiche la
+                                                                                                           // position
+                                                                                                           // finale
+            afficherCarteAvecPersonnage(carte, positionFinale[0], positionFinale[1]); // Affiche la carte avec 'P' à la
+                                                                                      // position finale
 
         } catch (IOException e) {
-            System.out.println("Erreur lecture mouvements.txt : " + e.getMessage());
+            System.err.println("Erreur lors de la lecture de mouvement.txt : " + e.getMessage()); // Gère une erreur si
+                                                                                                  // le fichier ne peut
+                                                                                                  // pas être lu
         }
     }
 
-    // Affiche la carte avec 'P' à la position actuelle
+    // Lit le fichier carte et le convertit en liste de tableaux de caractères
+    public static List<char[]> chargerCarte(String chemin) {
+        List<char[]> carte = new ArrayList<>(); // Initialise la liste qui va contenir chaque ligne de la carte
+        try {
+            List<String> lignes = Files.readAllLines(Paths.get(chemin)); // Lis toutes les lignes du fichier
+            for (String ligne : lignes) {
+                carte.add(ligne.toCharArray()); // Convertit chaque ligne en tableau de caractères
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la lecture de la carte : " + e.getMessage()); // En cas d'erreur de
+                                                                                             // lecture
+        }
+        return carte; // Retourne la carte chargée
+    }
+
+    // Affiche simplement la carte sans personnage
+    public static void afficherCarte(List<char[]> carte) {
+        for (char[] ligne : carte) {
+            System.out.println(new String(ligne)); // Affiche chaque ligne
+        }
+    }
+
+    // Récupère les coordonnées de départ depuis une ligne du fichier
+    public static int[] lirePositionInitiale(String ligne) {
+        String[] coords = ligne.split(","); // Sépare la ligne par la virgule
+        int x = Integer.parseInt(coords[0].trim()); // Convertit la première coordonnée en entier
+        int y = Integer.parseInt(coords[1].trim()); // Convertit la seconde coordonnée en entier
+        return new int[] { x, y }; // Retourne les coordonnées dans un tableau
+    }
+
+    // Exécute les déplacements en fonction des instructions
+    public static int[] executerDeplacements(int x, int y, String instructions, List<char[]> carte) {
+        for (char direction : instructions.toCharArray()) { // Boucle sur chaque caractère des instructions
+            int nx = x; // Coordonnée x temporaire
+            int ny = y; // Coordonnée y temporaire
+
+            switch (direction) { // Change les coordonnées selon la direction
+                case 'N':
+                    ny--;
+                    break; // Nord = haut
+                case 'S':
+                    ny++;
+                    break; // Sud = bas
+                case 'E':
+                    nx++;
+                    break; // Est = droite
+                case 'O':
+                    nx--;
+                    break; // Ouest = gauche
+                default:
+                    System.out.println("Direction inconnue : " + direction); // Si direction invalide
+                    continue;
+            }
+
+            if (caseLibre(nx, ny, carte)) { // Vérifie si la case est accessible
+                x = nx; // Met à jour la position x
+                y = ny; // Met à jour la position y
+            } else {
+                System.out.println("Déplacement bloqué à (" + nx + "," + ny + ")"); // Affiche un message si l'obstacle
+                                                                                    // bloque le passage
+            }
+        }
+        return new int[] { x, y }; // Retourne la position finale
+    }
+
+    // Affiche la carte avec le personnage 'P' à la bonne position
     public static void afficherCarteAvecPersonnage(List<char[]> carte, int posX, int posY) {
         for (int y = 0; y < carte.size(); y++) {
             for (int x = 0; x < carte.get(y).length; x++) {
                 if (x == posX && y == posY) {
-                    System.out.print('P');
+                    System.out.print('P'); // Place le personnage
                 } else {
-                    System.out.print(carte.get(y)[x]);
+                    System.out.print(carte.get(y)[x]); // Affiche la case normale
                 }
             }
-            System.out.println();
+            System.out.println(); // Passe à la ligne suivante
         }
     }
 
-    // Teste si la case est libre (pas un arbre et dans les limites de la carte)
-    private static boolean caseLibre(int x, int y, List<char[]> carte) {
+    // Vérifie si une case est libre (pas un arbre et pas en dehors de la carte)
+    public static boolean caseLibre(int x, int y, List<char[]> carte) {
         if (y < 0 || y >= carte.size() || x < 0 || x >= carte.get(y).length) {
-            return false; // Hors des limites de la carte
+            return false; // Hors de la carte
         }
-        return carte.get(y)[x] != '#'; // Libre si ce n’est pas un arbre
+        return carte.get(y)[x] != '#'; // Vrai si ce n'est pas un arbre
     }
 }
