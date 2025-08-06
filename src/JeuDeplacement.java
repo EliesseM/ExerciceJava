@@ -70,6 +70,13 @@ public class JeuDeplacement { // Déclaration de la classe principale
 
     // Exécute les déplacements en fonction des instructions
     public static int[] executerDeplacements(int x, int y, String instructions, List<char[]> carte) {
+
+        if (!caseLibre(x, y, carte)) {
+            System.out.println(
+                    "La position initiale (" + x + ", " + y + ") est sur un obstacle. Aucun déplacement possible.");
+            return new int[] { x, y }; // on ne fait aucun déplacement
+        }
+
         for (char direction : instructions.toCharArray()) { // Boucle sur chaque caractère des instructions
             int nx = x; // Coordonnée x temporaire
             int ny = y; // Coordonnée y temporaire

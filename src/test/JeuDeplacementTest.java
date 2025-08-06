@@ -59,6 +59,23 @@ public class JeuDeplacementTest {
         assertFalse(JeuDeplacement.caseLibre(0, 5, carte), "Case hors de la carte (trop bas).");
     }
 
+    // Test de position initiale sur obstacle
+    @Test
+    public void testExecuterDeplacement_PositionInitialeSurObstacle() {
+        List<char[]> carte = Arrays.asList(
+                "....".toCharArray(),
+                ".##.".toCharArray(),
+                "....".toCharArray());
+
+        int[] positionDepart = new int[] { 2, 1 }; // position sur un arbre
+        String instructions = "EESS";
+
+        // Le personnage ne doit pas bouger du tout
+        int[] resultat = JeuDeplacement.executerDeplacements(positionDepart[0], positionDepart[1], instructions, carte);
+        assertArrayEquals(new int[] { 2, 1 }, resultat,
+                "la position est un obstacle, aucun deplacement ne doit etre effectué");
+    }
+
     // Test des déplacements simples sans obstacle
     @Test
     public void testExecuterDeplacements_SansObstacle() {
