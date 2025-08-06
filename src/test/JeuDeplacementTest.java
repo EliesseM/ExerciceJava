@@ -10,6 +10,23 @@ import java.util.*; // Pour List et Arrays
 
 public class JeuDeplacementTest {
 
+    @Test
+    public void testChargerCarteDepuisFichier() {
+        // Appelle la méthode sur un fichier existant (doit être présent dans le
+        // répertoire du projet)
+        List<char[]> carte = JeuDeplacement.chargerCarte("carte.txt");
+
+        // Vérifie que la carte n'est pas vide
+        assertNotNull(carte, "La carte ne doit pas être null.");
+        assertFalse(carte.isEmpty(), "La carte ne doit pas être vide.");
+
+        // Vérifie que chaque ligne a bien été transformée en tableau de char
+        for (char[] ligne : carte) {
+            assertNotNull(ligne, "Chaque ligne de la carte doit être un tableau de caractères.");
+            assertTrue(ligne.length > 0, "Chaque ligne doit contenir au moins un caractère.");
+        }
+    }
+
     // Test de la méthode lirePositionInitiale
     @Test
     public void testLirePositionInitiale() {
@@ -57,6 +74,20 @@ public class JeuDeplacementTest {
         // Position en dehors de la carte
         assertFalse(JeuDeplacement.caseLibre(-1, 0, carte), "Case hors de la carte (négatif).");
         assertFalse(JeuDeplacement.caseLibre(0, 5, carte), "Case hors de la carte (trop bas).");
+    }
+
+    @Test
+    public void testDeplacementBordureCarteVersExterieur() {
+        List<char[]> carte = Arrays.asList(
+                "....".toCharArray(),
+                "....".toCharArray());
+
+        int x = 0, y = 0;
+        String instructions = "NO"; // Nord puis Ouest = vers dehors
+
+        // Devrait rester à (0,0) car toutes les directions mènent hors de la carte
+        int[] resultat = JeuDeplacement.executerDeplacements(x, y, instructions, carte);
+        assertArrayEquals(new int[] { 0, 0 }, resultat, "Le personnage ne doit pas sortir de la carte.");
     }
 
     // Test de position initiale sur obstacle
